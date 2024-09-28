@@ -6,11 +6,17 @@ function debugLog(message) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   debugLog("Message received: " + JSON.stringify(request));
-  if (request.action === "generateSummary") {
-    debugLog("Starting generateAndRetrieveSummary");
-    generateAndRetrieveSummary()
+  
+  const actions = {
+    generateSummary: generateAndRetrieveSummary,
+    copyArtifacts: copyArtifactsButton
+  };
+
+  if (actions[request.action]) {
+    debugLog(`Starting ${request.action}`);
+    actions[request.action]()
       .then(summary => {
-        debugLog("Summary generated");
+        debugLog(`Completed ${request.action}`);
         sendResponse({ success: true, summary: summary });
       })
       .catch(error => {
@@ -30,6 +36,29 @@ async function generateAndRetrieveSummary() {
     await pressEnter(inputElement);
   } catch (error) {
     debugLog("Error in generateAndRetrieveSummary: " + error.message);
+    throw error;
+  }
+}
+
+async function copyArtifactsButton() {
+  try {
+    // すべてのマッチするボタンを取得
+    const buttons = document.querySelectorAll('button.inline-flex');
+
+    // 後ろから3番目のボタンを選択
+    const button = buttons[buttons.length - 3];
+    
+    if (button) {
+      console.log("button.click()");
+      button.click();
+      // setTimeout(() => {
+      //   // chrome.runtime.sendMessage({action: "getClipboardContent"});
+      // }, 100); // クリップボードの内容が更新されるのを少し待つ
+    } else {
+      console.log("Button not found");
+    }
+  } catch (error) {
+    debugLog("Error in copyArtifactsButton: " + error.message);
     throw error;
   }
 }

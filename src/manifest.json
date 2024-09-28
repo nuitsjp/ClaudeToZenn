@@ -3,9 +3,18 @@
   "name": "ClaudeToZenn",
   "version": "1.0",
   "description": "Generate Zenn articles from Claude.ai conversations",
-  "permissions": ["activeTab", "clipboardWrite"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "clipboardRead",
+    "clipboardWrite"
+  ],
   "action": {
     "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -17,5 +26,8 @@
     "16": "images/icon16.svg",
     "48": "images/icon48.svg",
     "128": "images/icon128.svg"
-  }
+  },
+  "host_permissions": [
+    "https://claude.ai/*"
+  ]
 }

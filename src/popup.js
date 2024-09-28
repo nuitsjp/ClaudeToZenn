@@ -13,17 +13,26 @@ debugLog("Popup script loaded");
 document.addEventListener('DOMContentLoaded', function() {
   debugLog("Popup DOM loaded");
   const generateButton = document.getElementById('generateSummary');
+  const copyButton = document.getElementById('copyArtifacts');
   const statusDiv = document.getElementById('status');
   const summaryDiv = document.getElementById('summary');
 
-  if (!generateButton) {
-    debugLog("Generate Summary button not found");
+  if (!generateButton || !copyButton) {
+    debugLog("One or more buttons not found");
     return;
   }
 
   generateButton.addEventListener('click', function() {
-    debugLog("Generate Summary button clicked");
-    statusDiv.textContent = "Generating summary...";
+    handleButtonClick('generateSummary', "Generating summary...", "Summary generated successfully");
+  });
+
+  copyButton.addEventListener('click', function() {
+    handleButtonClick('copyArtifacts', "Copying artifacts...", "Artifacts copied successfully");
+  });
+
+  function handleButtonClick(action, startMessage, successMessage) {
+    debugLog(action + " button clicked");
+    statusDiv.textContent = startMessage;
     summaryDiv.textContent = "";
 
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -32,20 +41,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       debugLog("Active tab: " + JSON.stringify(tabs[0]));
-      chrome.tabs.sendMessage(tabs[0].id, {action: "generateSummary"}, function(response) {
-        debugLog("Response received in popup: " + JSON.stringify(response));
+      chrome.tabs.sendMessage(tabs[0].id, {action: action}, function(response) {
+        debugLog("Response received in popup");
         if (chrome.runtime.lastError) {
           debugLog("Chrome runtime error: " + chrome.runtime.lastError.message);
           statusDiv.textContent = "Error: " + chrome.runtime.lastError.message;
-        } else if (response && response.success) {
-          statusDiv.textContent = "Summary generated successfully";
-          summaryDiv.textContent = response.summary;
-        } else {
-          statusDiv.textContent = "Error: " + (response ? response.error : "Unknown error");
         }
       });
     });
-  });
+  }
 });
 
 debugLog("Popup script finished loading");
