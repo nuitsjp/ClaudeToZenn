@@ -28,7 +28,6 @@ async function generateAndRetrieveSummary() {
     debugLog("Input element found");
     await inputPrompt(inputElement);
     await pressEnter(inputElement);
-    return await retrieveSummary();
   } catch (error) {
     debugLog("Error in generateAndRetrieveSummary: " + error.message);
     throw error;
@@ -83,35 +82,18 @@ topicsには関連技術を端的な英単語で記述します。複数ある�
 
 ではお願いします。`;
 
-  const promptLines = promptText.split('\n');
-
-  for (let i = 0; i < promptLines.length; i++) {
-    await typeLine(inputArea, promptLines[i]);
-    if (i < promptLines.length - 1) {
-      await insertNewline(inputArea);
-    }
-  }
-
-  debugLog("Prompt inputted");
-}
-
-async function typeLine(element, line) {
-  for (let char of line) {
-    await typeCharacter(element, char);
-  }
-}
-
-async function typeCharacter(element, char) {
+  inputArea.textContent += promptText;
   const event = new InputEvent('input', {
     inputType: 'insertText',
-    data: char,
+    data: promptText,
     bubbles: true,
     cancelable: true,
   });
-  element.textContent += char;
-  element.dispatchEvent(event);
-  // 入力の間に少し遅延を入れる
-  await new Promise(resolve => setTimeout(resolve, 10));
+  inputArea.dispatchEvent(event);
+  // 各行の入力後に遅延を入れる
+  await new Promise(resolve => setTimeout(resolve, 50));
+
+  debugLog("Prompt inputted");
 }
 
 async function insertNewline(element) {
@@ -154,38 +136,4 @@ async function pressEnter(element) {
   element.textContent += '\n';
   element.dispatchEvent(new Event('input', { bubbles: true }));
   await new Promise(resolve => setTimeout(resolve, 50)); // 改行後の短い遅延
-}
-
-async function submitPrompt(inputArea) {
-  debugLog("Submitting prompt");
-
-  // Enterキーイベントを作成
-  const enterKeyEvent = new KeyboardEvent('keydown', {
-    bubbles: true,
-    cancelable: true,
-    key: 'Enter',
-    code: 'Enter',
-    keyCode: 13,
-    which: 13,
-    shiftKey: false
-  });
-
-  // Enterキーイベントを発火
-  inputArea.dispatchEvent(enterKeyEvent);
-  debugLog("Enter key pressed for submission");
-
-  // レスポンスを待つ
-  await new Promise(resolve => setTimeout(resolve, 5000));
-}
-
-async function retrieveSummary() {
-  debugLog("Retrieving summary");
-  await waitForElement('.prose');
-  const lastResponse = document.querySelector('.prose');
-  if (!lastResponse) {
-    throw new Error("Response not found");
-  }
-
-  debugLog("Summary retrieved");
-  return lastResponse.innerText;
 }
