@@ -11,11 +11,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     generateAndRetrieveSummary()
       .then(summary => {
         debugLog("Summary generated");
-        sendResponse({success: true, summary: summary});
+        sendResponse({ success: true, summary: summary });
       })
       .catch(error => {
         debugLog("Error: " + error.message);
-        sendResponse({success: false, error: error.message});
+        sendResponse({ success: false, error: error.message });
       });
     return true;  // 非同期レスポンスを示す
   }
@@ -27,7 +27,7 @@ async function generateAndRetrieveSummary() {
     const inputElement = await waitForElement('div[contenteditable="true"]');
     debugLog("Input element found");
     await inputPrompt(inputElement);
-    await submitPrompt(inputElement);
+    await pressEnter(inputElement);
     return await retrieveSummary();
   } catch (error) {
     debugLog("Error in generateAndRetrieveSummary: " + error.message);
@@ -54,7 +54,7 @@ function waitForElement(selector) {
 
 async function inputPrompt(inputArea) {
   debugLog("Inputting prompt");
-  
+
   const prompt = `以下の内容でZenn用の記事を作成してください:
 1. マークダウン形式で作成する
 2. タイトルは「ClaudeとのQ&A」とする
@@ -67,9 +67,22 @@ async function inputPrompt(inputArea) {
   debugLog("Prompt inputted");
 }
 
+async function pressEnter(element) {
+  const enterEvent = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+    keyCode: 13
+  });
+  element.dispatchEvent(enterEvent);
+  element.textContent += '\n';
+  element.dispatchEvent(new Event('input', { bubbles: true }));
+  await new Promise(resolve => setTimeout(resolve, 50)); // 改行後の短い遅延
+}
+
 async function submitPrompt(inputArea) {
   debugLog("Submitting prompt");
-  
+
   // Enterキーイベントを作成
   const enterKeyEvent = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -84,7 +97,7 @@ async function submitPrompt(inputArea) {
   // Enterキーイベントを発火
   inputArea.dispatchEvent(enterKeyEvent);
   debugLog("Enter key pressed for submission");
-  
+
   // レスポンスを待つ
   await new Promise(resolve => setTimeout(resolve, 5000));
 }
@@ -96,7 +109,7 @@ async function retrieveSummary() {
   if (!lastResponse) {
     throw new Error("Response not found");
   }
-  
+
   debugLog("Summary retrieved");
   return lastResponse.innerText;
 }
