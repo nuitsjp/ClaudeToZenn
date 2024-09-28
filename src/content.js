@@ -54,17 +54,93 @@ function waitForElement(selector) {
 
 async function inputPrompt(inputArea) {
   debugLog("Inputting prompt");
+  
+  const promptText = `ここまでの内容を簡潔なMarkdown形式のブログにまとめます。Artifactsとして作成してください。
+その際、通常のマークダウンと異なり、先頭に次のコンテンツを埋め込んでください。
 
-  const prompt = `以下の内容でZenn用の記事を作成してください:
-1. マークダウン形式で作成する
-2. タイトルは「ClaudeとのQ&A」とする
-3. 見出しは「はじめに」「Q&Aの内容」「まとめ」の3つとする
-4. 「Q&Aの内容」では、ここまでの会話内容を要約して箇条書きにする
-5. 記事の最後に「この記事はAI (Claude) を使って作成しました」と付け加える`;
+---
+title: ""
+emoji: "🌟"
+type: "tech" # tech: 技術記事 / idea: アイデア
+topics: []
+published: false
+---
 
-  inputArea.textContent = prompt;
-  inputArea.dispatchEvent(new Event('input', { bubbles: true }));
+
+titleには記事を端的に表すタイトルを。
+topicsには関連技術を端的な英単語で記述します。複数ある場合は「, 」でつなげて複数記述してください。
+例：　topics:[azure, powershell]
+
+これらの後ろに、マークダウンで記事を書きます。
+
+基本構造は
+
+# 結論
+# 解説
+# 補足情報
+
+として、まとめる内容に応じて適宜追加・削除してください。
+
+ではお願いします。`;
+
+  const promptLines = promptText.split('\n');
+
+  for (let i = 0; i < promptLines.length; i++) {
+    await typeLine(inputArea, promptLines[i]);
+    if (i < promptLines.length - 1) {
+      await insertNewline(inputArea);
+    }
+  }
+
   debugLog("Prompt inputted");
+}
+
+async function typeLine(element, line) {
+  for (let char of line) {
+    await typeCharacter(element, char);
+  }
+}
+
+async function typeCharacter(element, char) {
+  const event = new InputEvent('input', {
+    inputType: 'insertText',
+    data: char,
+    bubbles: true,
+    cancelable: true,
+  });
+  element.textContent += char;
+  element.dispatchEvent(event);
+  // 入力の間に少し遅延を入れる
+  await new Promise(resolve => setTimeout(resolve, 10));
+}
+
+async function insertNewline(element) {
+  // Shift+Enterキーイベントを作成
+  const shiftEnterEvent = new KeyboardEvent('keydown', {
+    key: 'Enter',
+    code: 'Enter',
+    which: 13,
+    keyCode: 13,
+    bubbles: true,
+    cancelable: true,
+    shiftKey: true
+  });
+
+  element.dispatchEvent(shiftEnterEvent);
+
+  // テキストエリアに改行を追加
+  element.textContent += '\n';
+
+  // inputイベントをディスパッチ
+  const inputEvent = new InputEvent('input', {
+    inputType: 'insertLineBreak',
+    bubbles: true,
+    cancelable: true,
+  });
+  element.dispatchEvent(inputEvent);
+
+  // 改行の間に少し遅延を入れる
+  await new Promise(resolve => setTimeout(resolve, 50));
 }
 
 async function pressEnter(element) {
