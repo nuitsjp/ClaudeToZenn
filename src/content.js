@@ -42,21 +42,17 @@ async function generateAndRetrieveSummary() {
 
 async function copyArtifactsButton() {
   try {
-    // すべてのマッチするボタンを取得
-    const buttons = document.querySelectorAll('button.inline-flex');
-
-    // 後ろから3番目のボタンを選択
-    const button = buttons[buttons.length - 3];
-    
-    if (button) {
-      console.log("button.click()");
-      button.click();
-      // setTimeout(() => {
-      //   // chrome.runtime.sendMessage({action: "getClipboardContent"});
-      // }, 100); // クリップボードの内容が更新されるのを少し待つ
-    } else {
-      console.log("Button not found");
-    }
+    // クリップボードの内容を読み取る（少し遅延を入れる）
+    setTimeout(() => {
+      readClipboard().then(text => {
+        console.log('Clipboard contents:', text);
+        // ここで取得したテキストを使って何かを行う
+        // 例: バックグラウンドスクリプトにテキストを送信
+        chrome.runtime.sendMessage({action: "processClipboardText", text: text});
+      }).catch(err => {
+        console.error('Failed to read clipboard contents: ', err);
+      });
+    }, 500);  // 500ミリ秒の遅延（必要に応じて調整）
   } catch (error) {
     debugLog("Error in copyArtifactsButton: " + error.message);
     throw error;
@@ -165,4 +161,20 @@ async function pressEnter(element) {
   element.textContent += '\n';
   element.dispatchEvent(new Event('input', { bubbles: true }));
   await new Promise(resolve => setTimeout(resolve, 50)); // 改行後の短い遅延
+}
+
+function readClipboard() {
+  return new Promise((resolve, reject) => {
+    // まず、navigator.clipboard.readText()を試みる
+    navigator.clipboard.readText().then(resolve).catch(() => {
+      // 失敗した場合、document.execCommandを使用
+      const textArea = document.createElement("textarea");
+      document.body.appendChild(textArea);
+      textArea.focus();
+      document.execCommand('paste');
+      const text = textArea.value;
+      document.body.removeChild(textArea);
+      resolve(text);
+    });
+  });
 }
