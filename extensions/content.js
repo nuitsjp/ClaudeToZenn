@@ -54,7 +54,7 @@ async function copyArtifactsButton() {
           summaryDiv.textContent = JSON.stringify(message);
         });
 
-        port.postMessage({ action: "hello" });
+        port.postMessage({ action: "post", content: text });
 
       }).catch(err => {
         console.error('Failed to read clipboard contents: ', err);
