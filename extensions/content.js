@@ -46,8 +46,16 @@ async function copyArtifactsButton() {
     setTimeout(() => {
       readClipboard().then(text => {
         console.log('Clipboard contents:', text);
-        
-        chrome.runtime.sendMessage({action: "processClipboardText", text: text});
+
+        // バックグラウンドスクリプトとの接続を確立
+        port = chrome.runtime.connect({name: "nativeMessaging"});
+
+        port.onMessage.addListener((message) => {
+          summaryDiv.textContent = JSON.stringify(message);
+        });
+
+        port.postMessage({ action: "hello" });
+
       }).catch(err => {
         console.error('Failed to read clipboard contents: ', err);
       });
