@@ -9,7 +9,7 @@ $manifestContent = @{
     path = $modulePath
     type = "stdio"
     allowed_origins = @(
-        "chrome-extension://biegnbaehdjbljpmlhmbmafggijcbhhm/"
+        "chrome-extension://mlhbhgjbdbgealohaocdehgkopefkndd/"
     )
 } | ConvertTo-Json
 
