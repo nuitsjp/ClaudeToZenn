@@ -57,9 +57,8 @@ async function copyArtifactsButton() {
         port.postMessage(
           { 
             action: "post", 
-            fileName: "artifacts.md",
             content: text,
-            repositoryPath: "C:\\foo\\bar\\"
+            repositoryPath: "C:\\Repos\\Zenn"
           });
 
       }).catch(err => {
@@ -95,6 +94,7 @@ async function inputPrompt(inputArea) {
   const promptText = `ここまでの内容を簡潔なMarkdown形式のブログにまとめます。Artifactsとして作成してください。
 その際、通常のマークダウンと異なり、先頭に次のコンテンツを埋め込んでください。
 
+%FILE_NAME%
 ---
 title: ""
 emoji: "🌟"
@@ -105,6 +105,12 @@ published: false
 
 
 titleには記事を端的に表すタイトルを。
+%FILE_NAME%はtitleを英訳し、すべて半角でハイフンで結合したものを記述してください。
+またその際に、現在日時をyyyy-MM-dd形式で記述してください。
+文字数は日付と拡張子を含めて50文字以内に収めてください。
+例：　title: "Azure Functions のデプロイ方法"
+  　　　%FILE_NAME%: 2024-09-01-azure-functions-deploy.md
+
 topicsには関連技術を端的な英単語で記述します。複数ある場合は「, 」でつなげて複数記述してください。
 例：　topics:[azure, powershell]
 
