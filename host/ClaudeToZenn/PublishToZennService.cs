@@ -18,16 +18,13 @@ public class PublishToZennService : IPublishToZennService
 
             var psi = new ProcessStartInfo
             {
-                FileName = "cmd.exe",
-                Arguments = $"/c Publish.cmd \"{request.RepositoryPath}\" \"publish {fileName}\" \"{filePath}\"", // /c オプションを使用して、コマンド実行後にウィンドウを閉じないようにします
+                FileName = "pwsh.exe", // PowerShell Core実行ファイル
+                Arguments = $"-Command \"& {{.\\Publish-Article.ps1 -RepoPath '{request.RepositoryPath}' -ArticleTitle 'publish {fileName}' -FilePath '{filePath}'}}\"",
                 UseShellExecute = true,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false,
-                CreateNoWindow = false // コンソールウィンドウを表示
+                CreateNoWindow = false
             };
 
             var process = new Process { StartInfo = psi };
-
             process.Start();
 
             return new Result(true, null);
