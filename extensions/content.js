@@ -54,7 +54,13 @@ async function copyArtifactsButton() {
           summaryDiv.textContent = JSON.stringify(message);
         });
 
-        port.postMessage({ action: "post", content: text });
+        port.postMessage(
+          { 
+            action: "post", 
+            fileName: "artifacts.md",
+            content: text,
+            repositoryPath: "C:\\foo\\bar\\"
+          });
 
       }).catch(err => {
         console.error('Failed to read clipboard contents: ', err);

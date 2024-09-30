@@ -1,7 +1,26 @@
-﻿namespace ClaudeToZenn;
+﻿using System.Text.Json;
+
+namespace ClaudeToZenn;
 
 public record Request(
-    string Title,
+    string Action,
+    string FileName,
     string Content,
-    string RepositoryPath,
-    string FileName);
+    string RepositoryPath)
+{
+    public static Request Parse(string message)
+    {
+        // 先頭が小文字のJSONをデシリアライズするためには、JsonSerializerOptions.PropertyNameCaseInsensitiveを指定する
+        return JsonSerializer.Deserialize<Request>(
+            message, 
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            })!;
+    }
+
+    public string ToJson()
+    {
+        return JsonSerializer.Serialize(this);
+    }
+};

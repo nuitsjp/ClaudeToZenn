@@ -1,29 +1,32 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
+using ClaudeToZenn;
 
 System.Diagnostics.Debugger.Launch();
 
-while (true)
+var message = ReadMessage();
+if (string.IsNullOrEmpty(message))
 {
-    var message = ReadMessage();
-    if (message == null)
-        break;
-
-    if (string.IsNullOrEmpty(message))
-    {
-        await Task.Delay(TimeSpan.FromMilliseconds(100));
-        continue;
-    }
-
-    var response = ProcessMessage(message);
-    SendMessage(response);
-
+    return ;
 }
 
-string? ReadMessage()
+try
 {
-    var standardInput = Console.OpenStandardInput();
+    var request = Request.Parse(message);
+    var service = new PublishToZennService();
+    var result = await service.PublishAsync(request);
+    SendMessage(result);
+}
+catch (Exception e)
+{
+    SendMessage(new Result(false, e.Message));
+}
+
+return;
+
+string ReadMessage()
+{
+    using var standardInput = Console.OpenStandardInput();
     var lengthBytes = new byte[4];
     // ReSharper disable once MustUseReturnValue
     standardInput.Read(lengthBytes, 0, 4);
@@ -35,32 +38,11 @@ string? ReadMessage()
     return Encoding.UTF8.GetString(buffer);
 }
 
-void SendMessage(string message)
+void SendMessage(Result result)
 {
-    var bytes = Encoding.UTF8.GetBytes(message);
-    var stdout = Console.OpenStandardOutput();
+    var bytes = Encoding.UTF8.GetBytes(result.ToJson());
+    using var stdout = Console.OpenStandardOutput();
     stdout.Write(BitConverter.GetBytes(bytes.Length), 0, 4);
     stdout.Write(bytes, 0, bytes.Length);
     stdout.Flush();
-}
-
-string ProcessMessage(string message)
-{
-    try
-    {
-        using JsonDocument doc = JsonDocument.Parse(message);
-        var root = doc.RootElement;
-        var action = root.GetProperty("action").GetString();
-
-        return action switch
-        {
-            "hello" => JsonSerializer.Serialize(new { response = "Hello from Native Messaging Host!" }),
-            "echo" => JsonSerializer.Serialize(new { response = $"Echo: {root.GetProperty("text").GetString()}" }),
-            _ => JsonSerializer.Serialize(new { error = "Unknown action" })
-        };
-    }
-    catch (Exception ex)
-    {
-        return JsonSerializer.Serialize(new { error = ex.Message });
-    }
 }

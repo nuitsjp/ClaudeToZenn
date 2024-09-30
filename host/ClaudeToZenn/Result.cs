@@ -1,5 +1,13 @@
-﻿namespace ClaudeToZenn;
+﻿using System.Text.Json;
+
+namespace ClaudeToZenn;
 
 public record Result(
     bool IsSuccess,
-    string? Exception);
+    string? Exception)
+{
+    public string ToJson()
+    {
+        return JsonSerializer.Serialize(this);
+    }
+};
