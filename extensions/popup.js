@@ -26,6 +26,13 @@ document.addEventListener('DOMContentLoaded', function() {
     handleButtonClick('generateSummary', "Generating summary...", "Summary generated successfully");
   });
 
+  // バックグラウンドスクリプトとの接続を確立
+  port = chrome.runtime.connect({name: "nativeMessaging"});
+
+  port.onMessage.addListener((message) => {
+    summaryDiv.textContent = JSON.stringify(message);
+  });
+
   copyButton.addEventListener('click', function() {
     handleButtonClick('copyArtifacts', "Copying artifacts...", "Artifacts copied successfully");
   });
@@ -42,6 +49,9 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       debugLog("Active tab: " + JSON.stringify(tabs[0]));
       chrome.tabs.sendMessage(tabs[0].id, {action: action}, function(response) {
+
+        port.postMessage({ action: "hello" });
+        
         debugLog("Response received in popup");
         if (chrome.runtime.lastError) {
           debugLog("Chrome runtime error: " + chrome.runtime.lastError.message);

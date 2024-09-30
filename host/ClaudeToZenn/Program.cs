@@ -2,25 +2,36 @@
 using System.Text;
 using System.Text.Json;
 
+System.Diagnostics.Debugger.Launch();
+
 while (true)
 {
     var message = ReadMessage();
     if (message == null)
         break;
 
+    if (string.IsNullOrEmpty(message))
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(100));
+        continue;
+    }
+
     var response = ProcessMessage(message);
     SendMessage(response);
+
 }
 
-string ReadMessage()
+string? ReadMessage()
 {
-    var stdin = Console.OpenStandardInput();
+    var standardInput = Console.OpenStandardInput();
     var lengthBytes = new byte[4];
-    stdin.Read(lengthBytes, 0, 4);
+    // ReSharper disable once MustUseReturnValue
+    standardInput.Read(lengthBytes, 0, 4);
     var length = BitConverter.ToInt32(lengthBytes, 0);
 
     var buffer = new byte[length];
-    stdin.Read(buffer, 0, buffer.Length);
+    // ReSharper disable once MustUseReturnValue
+    standardInput.Read(buffer, 0, buffer.Length);
     return Encoding.UTF8.GetString(buffer);
 }
 

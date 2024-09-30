@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Generate Zenn articles from Claude.ai conversations",
   "permissions": [
+    "nativeMessaging",
     "storage",
     "clipboardRead"
   ],
