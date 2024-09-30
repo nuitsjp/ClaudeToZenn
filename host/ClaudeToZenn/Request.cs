@@ -4,7 +4,6 @@ namespace ClaudeToZenn;
 
 public record Request(
     string Action,
-    string FileName,
     string Content,
     string RepositoryPath)
 {

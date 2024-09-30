@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json;
 using ClaudeToZenn;
 
 System.Diagnostics.Debugger.Launch();
@@ -14,7 +13,7 @@ try
 {
     var request = Request.Parse(message);
     var service = new PublishToZennService();
-    var result = await service.PublishAsync(request);
+    var result = service.Publish(request);
     SendMessage(result);
 }
 catch (Exception e)
