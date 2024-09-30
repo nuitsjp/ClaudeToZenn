@@ -91,40 +91,9 @@ function waitForElement(selector) {
 async function inputPrompt(inputArea) {
   debugLog("Inputting prompt");
   
-  const promptText = `ここまでの内容を簡潔なMarkdown形式のブログにまとめます。Artifactsとして作成してください。
-その際、通常のマークダウンと異なり、先頭に次のコンテンツを埋め込んでください。
-
-%FILE_NAME%
----
-title: ""
-emoji: "🌟"
-type: "tech" # tech: 技術記事 / idea: アイデア
-topics: []
-published: true
----
-
-
-titleには記事を端的に表すタイトルを。
-%FILE_NAME%はtitleを英訳し、すべて半角でハイフンで結合したものを記述してください。
-またその際に、現在日時をyyyy-MM-dd形式で記述してください。
-文字数は日付と拡張子を含めて50文字以内に収めてください。
-例：　title: "Azure Functions のデプロイ方法"
-  　　　%FILE_NAME%: 2024-09-01-azure-functions-deploy.md
-
-topicsには関連技術を端的な英単語で記述します。複数ある場合は「, 」でつなげて複数記述してください。
-例：　topics:[azure, powershell]
-
-これらの後ろに、マークダウンで記事を書きます。
-
-基本構造は
-
-# 結論
-# 解説
-# 補足情報
-
-として、まとめる内容に応じて適宜追加・削除してください。
-
-ではお願いします。`;
+  const url = chrome.runtime.getURL('prompt.txt');
+  const response = await fetch(url);
+  const promptText = await response.text();
 
   inputArea.textContent += promptText;
   const event = new InputEvent('input', {

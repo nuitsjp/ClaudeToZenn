@@ -8,6 +8,10 @@
     "storage",
     "clipboardRead"
   ],
+  "web_accessible_resources": [{
+    "resources": ["prompt.txt"],
+    "matches": ["https://claude.ai/*"]
+  }],
   "action": {
     "default_popup": "popup.html"
   },
