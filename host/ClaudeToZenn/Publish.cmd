@@ -1,67 +1,99 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM �p�����[�^�̃`�F�b�N
+REM UTF-8モードを有効にする
+chcp 65001 > nul
+
+REM パラメータのチェック
 if "%~1"=="" (
-    echo Error: Repository path is required.
+    echo エラー: リポジトリのパスが必要です。
     goto :error
 )
 if "%~2"=="" (
-    echo Error: Commit message is required.
+    echo エラー: 記事のタイトルが必要です。
+    goto :error
+)
+if "%~3"=="" (
+    echo エラー: ファイルパスが必要です。
     goto :error
 )
 
 set "REPO_PATH=%~1"
-set "COMMIT_MSG=%~2"
+set "ARTICLE_TITLE=%~2"
+set "FILE_PATH=%~3"
 
-REM ���|�W�g���p�X�̑��݃`�F�b�N
+REM リポジトリパスの存在チェック
 if not exist "%REPO_PATH%" (
-    echo Error: The specified repository path does not exist.
+    echo エラー: 指定されたリポジトリのパスが存在しません。
     goto :error
 )
 
-REM ���|�W�g���Ɉړ�
+REM ファイルの存在チェック
+if not exist "%FILE_PATH%" (
+    echo エラー: 指定されたファイルが存在しません。
+    goto :error
+)
+
+REM リポジトリに移動
 cd /d "%REPO_PATH%"
 if %errorlevel% neq 0 (
-    echo Error: Failed to change directory to %REPO_PATH%
+    echo エラー: %REPO_PATH% へのディレクトリ変更に失敗しました。
     goto :error
 )
 
-REM Git����̎��s
-echo Pulling latest changes...
+REM ファイルの内容を表示
+echo 記事の内容:
+echo -------------------
+powershell -Command "Get-Content -Path '%FILE_PATH%' -Encoding UTF8 | ForEach-Object { Write-Host $_ }"
+echo -------------------
+
+REM 記事発行の確認
+set /p CONFIRM_PUBLISH="上記の内容で記事を発行しますか？ (Y/N): "
+if /i not "%CONFIRM_PUBLISH%"=="Y" (
+    echo 記事の発行をキャンセルしました。ファイルを削除します。
+    del /f "%FILE_PATH%"
+    if %errorlevel% neq 0 (
+        echo エラー: ファイルの削除に失敗しました。
+        goto :error
+    )
+    echo ファイルが正常に削除されました。
+    goto :end
+)
+
+REM Git操作の実行
+echo 最新の変更を取得中...
 git pull
 if %errorlevel% neq 0 (
-    echo Error: Git pull failed.
+    echo エラー: Git pull に失敗しました。
     goto :error
 )
 
-echo Adding all changes...
-git add .
+echo 記事を追加中...
+git add "%FILE_PATH%"
 if %errorlevel% neq 0 (
-    echo Error: Git add failed.
+    echo エラー: Git add に失敗しました。
     goto :error
 )
 
-echo Committing changes...
-git commit -m "%COMMIT_MSG%"
+echo 記事を発行中...
+git commit -m "記事を発行: %ARTICLE_TITLE%"
 if %errorlevel% neq 0 (
-    echo Error: Git commit failed.
+    echo エラー: 記事の発行（Git commit）に失敗しました。
     goto :error
 )
 
-REM Push�̓R�����g�A�E�g
-REM echo Pushing changes...
-REM git push
-REM if %errorlevel% neq 0 (
-REM     echo Error: Git push failed.
-REM     goto :error
-REM )
+echo 変更をプッシュ中...
+git push
+if %errorlevel% neq 0 (
+    echo エラー: Git push に失敗しました。
+    goto :error
+)
 
-echo All operations completed successfully.
+echo 記事が正常に発行されました。
 goto :end
 
 :error
-echo An error occurred during the process.
+echo 処理中にエラーが発生しました。
 
 :end
 pause

@@ -19,7 +19,7 @@ public class PublishToZennService : IPublishToZennService
             var psi = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments = $"/c Publish.cmd \"{request.RepositoryPath}\" \"publish {fileName}\"", // /c オプションを使用して、コマンド実行後にウィンドウを閉じないようにします
+                Arguments = $"/c Publish.cmd \"{request.RepositoryPath}\" \"publish {fileName}\" \"{filePath}\"", // /c オプションを使用して、コマンド実行後にウィンドウを閉じないようにします
                 UseShellExecute = true,
                 RedirectStandardOutput = false,
                 RedirectStandardError = false,
