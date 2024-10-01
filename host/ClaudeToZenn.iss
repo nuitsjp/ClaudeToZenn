@@ -23,6 +23,9 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 DisableWelcomePage=yes
 DisableDirPage=yes
+; サイレントインストールのための追加設定
+DisableFinishedPage=yes
+SetupMutex={{24254DEA-9933-461C-94A7-136CD235EA38}setup
 
 [Languages]
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
@@ -58,5 +61,14 @@ begin
     Lines.SaveToFile(ExpandConstant('{app}\manifest.json'));
   finally
     Lines.Free;
+  end;
+end;
+
+function InitializeSetup(): Boolean;
+begin
+  Result := True;
+  if not WizardSilent then
+  begin
+    // 通常のインストール時の追加処理（必要な場合）
   end;
 end;
