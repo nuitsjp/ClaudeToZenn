@@ -3,6 +3,7 @@
 #define MyAppPublisher "nuits.jp"
 #define MyAppURL "https://github.com/nuitsjp/ClaudeToZenn"
 #define MyAppExeName "ClaudeToZenn.exe"
+#define MyOutputDir "ClaudeToZenn\bin\Release\Installer"
 
 [Setup]
 AppId={{24254DEA-9933-461C-94A7-136CD235EA38}
@@ -14,7 +15,8 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={localappdata}\{#MyAppName}
 DisableProgramGroupPage=yes
-OutputBaseFilename={#MyAppName}_Setup_{#MyAppVersion}
+OutputDir={#MyOutputDir}
+OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -26,8 +28,8 @@ DisableDirPage=yes
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Files]
-Source: "{#SourcePath}bin\Release\net481\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}bin\Release\net481\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourcePath}ClaudeToZenn\bin\Release\net481\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}ClaudeToZenn\bin\Release\net481\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourcePath}manifest.json"; DestDir: "{app}"; Flags: ignoreversion; AfterInstall: ModifyManifest
 
 [Registry]
@@ -37,7 +39,7 @@ Root: HKCU; Subkey: "Software\Google\Chrome\NativeMessagingHosts\jp.nuits.claude
 procedure ModifyManifest;
 var
   Lines: TStringList;
-  Content, NewPath: String;
+  NewPath: String;
   I: Integer;
 begin
   Lines := TStringList.Create;
@@ -48,7 +50,7 @@ begin
       if Pos('"path":', Lines[I]) > 0 then
       begin
         NewPath := ExpandConstant('{app}\{#MyAppExeName}');
-        NewPath := StringReplace(NewPath, '\', '\\', [rfReplaceAll]);
+        StringChangeEx(NewPath, '\', '\\', True);
         Lines[I] := '  "path": "' + NewPath + '",';
         Break;
       end;
@@ -58,6 +60,3 @@ begin
     Lines.Free;
   end;
 end;
-
-[Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
