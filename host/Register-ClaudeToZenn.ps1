@@ -1,3 +1,7 @@
+param (
+    [Parameter(Mandatory = $true)]
+    [string] $ExtensionId
+)
 $hostName = "jp.nuits.claude_to_zenn"
 $modulePath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\ClaudeToZenn.exe"
 $manifestPath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\manifest.json"
@@ -9,7 +13,7 @@ $manifestContent = @{
     path = $modulePath
     type = "stdio"
     allowed_origins = @(
-        "chrome-extension://mlhbhgjbdbgealohaocdehgkopefkndd/"
+        "chrome-extension://$ExtensionId/"
     )
 } | ConvertTo-Json
 

@@ -1,143 +1,132 @@
-console.log("ClaudeToZenn content script loaded");
+console.log("ClaudeToZenn content script loaded"); // コンテンツスクリプトの読み込み開始をログに記録
 
+// デバッグ用のログ関数を定義
 function debugLog(message) {
-  console.log("Content script: " + message);
+  console.log("Content script: " + message); // メッセージをコンソールに出力
 }
 
+// メッセージリスナーを追加
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  debugLog("Message received: " + JSON.stringify(request));
+  debugLog("Message received: " + JSON.stringify(request)); // 受信したメッセージをログに記録
   
+  // アクションに対応する関数を定義
   const actions = {
     generateSummary: generateAndRetrieveSummary,
-    copyArtifacts: copyArtifactsButton
+    publishArticle: publishArticleButton
   };
 
+  // リクエストされたアクションが存在する場合
   if (actions[request.action]) {
-    debugLog(`Starting ${request.action}`);
+    debugLog(`Starting ${request.action}`); // アクションの開始をログに記録
     actions[request.action]()
       .then(summary => {
-        debugLog(`Completed ${request.action}`);
-        sendResponse({ success: true, summary: summary });
+        debugLog(`Completed ${request.action}`); // アクションの完了をログに記録
+        sendResponse({ success: true, summary: summary }); // 成功レスポンスを送信
       })
       .catch(error => {
-        debugLog("Error: " + error.message);
-        sendResponse({ success: false, error: error.message });
+        debugLog("Error: " + error.message); // エラーをログに記録
+        sendResponse({ success: false, error: error.message }); // エラーレスポンスを送信
       });
     return true;  // 非同期レスポンスを示す
   }
+  else
+  {
+    // リクエストされたアクションが存在しない場合
+    debugLog("Unknown action: " + request.action); // 不明なアクションをログに記録
+  }
 });
 
+// 要約して記事を生成する非同期関数
 async function generateAndRetrieveSummary() {
   try {
-    debugLog("Waiting for input element");
-    const inputElement = await waitForElement('div[contenteditable="true"]');
-    debugLog("Input element found");
-    await inputPrompt(inputElement);
-    await pressEnter(inputElement);
+    debugLog("Waiting for input element"); // 入力要素の待機をログに記録
+    const inputElement = await waitForElement('div[contenteditable="true"]'); // 入力要素を待機
+    debugLog("Input element found"); // 入力要素が見つかったことをログに記録
+    await inputPrompt(inputElement); // プロンプトを入力
+    await pressEnter(inputElement); // Enterキーを押す
   } catch (error) {
-    debugLog("Error in generateAndRetrieveSummary: " + error.message);
-    throw error;
+    debugLog("Error in generateAndRetrieveSummary: " + error.message); // エラーをログに記録
+    throw error; // エラーを再スロー
   }
 }
 
-async function copyArtifactsButton() {
+// 記事を公開するボタンの非同期関数
+async function publishArticleButton() {
   try {
     // クリップボードの内容を読み取る（少し遅延を入れる）
     setTimeout(() => {
       readClipboard().then(text => {
-        console.log('Clipboard contents:', text);
+        console.log('Clipboard contents:', text); // クリップボードの内容をログに記録
 
         // バックグラウンドスクリプトとの接続を確立
         port = chrome.runtime.connect({name: "nativeMessaging"});
+        console.log('nativeMessaging connected.'); // 接続の確立をログに記録
 
+        // メッセージリスナーを追加
         port.onMessage.addListener((message) => {
-          summaryDiv.textContent = JSON.stringify(message);
+          console.log('Received message:', JSON.stringify(message)); // 受信したメッセージをログに記録
         });
 
+        // メッセージをポスト
         port.postMessage(
           { 
             action: "post", 
             content: text,
-            repositoryPath: "C:\\Repos\\Zenn"
+            repositoryPath: "D:\\Zenn"
           });
+        console.log('nativeMessaging posted.'); // メッセージのポストをログに記録
 
       }).catch(err => {
-        console.error('Failed to read clipboard contents: ', err);
+        console.error('Failed to read clipboard contents: ', err); // クリップボード読み取り失敗をログに記録
       });
     }, 500);  // 500ミリ秒の遅延（必要に応じて調整）
   } catch (error) {
-    debugLog("Error in copyArtifactsButton: " + error.message);
-    throw error;
+    debugLog("Error in publishArticleButton: " + error.message); // エラーをログに記録
+    throw error; // エラーを再スロー
   }
 }
 
+// 指定されたセレクタに一致する要素が見つかるまで待機する関数
 function waitForElement(selector) {
   return new Promise((resolve) => {
-    debugLog("Starting waitForElement for: " + selector);
+    debugLog("Starting waitForElement for: " + selector); // 要素の待機開始をログに記録
     const checkElement = () => {
-      const element = document.querySelector(selector);
+      const element = document.querySelector(selector); // 要素をチェック
       if (element) {
-        debugLog("Element found");
-        resolve(element);
+        debugLog("Element found"); // 要素が見つかったことをログに記録
+        resolve(element); // 要素を解決
       } else {
-        debugLog("Element not found, retrying in 500ms");
-        setTimeout(checkElement, 500);
+        debugLog("Element not found, retrying in 500ms"); // 要素が見つからない場合、再試行をログに記録
+        setTimeout(checkElement, 500); // 500ミリ秒後に再試行
       }
     };
-    checkElement();
+    checkElement(); // 要素のチェックを開始
   });
 }
 
+// 入力プロンプトを処理する非同期関数
 async function inputPrompt(inputArea) {
-  debugLog("Inputting prompt");
+  debugLog("Inputting prompt"); // プロンプトの入力をログに記録
   
-  const url = chrome.runtime.getURL('prompt.txt');
-  const response = await fetch(url);
-  const promptText = await response.text();
+  const url = chrome.runtime.getURL('prompt.txt'); // プロンプトテキストのURLを取得
+  const response = await fetch(url); // プロンプトテキストをフェッチ
+  const promptText = await response.text(); // プロンプトテキストをテキストとして取得
 
-  inputArea.textContent += promptText;
+  inputArea.textContent += promptText; // 入力エリアにプロンプトテキストを追加
   const event = new InputEvent('input', {
     inputType: 'insertText',
     data: promptText,
     bubbles: true,
     cancelable: true,
   });
-  inputArea.dispatchEvent(event);
+  inputArea.dispatchEvent(event); // 入力イベントをディスパッチ
   // 各行の入力後に遅延を入れる
-  await new Promise(resolve => setTimeout(resolve, 50));
+  await new Promise(resolve => setTimeout(resolve, 50)); // 50ミリ秒の遅延
 
-  debugLog("Prompt inputted");
+  debugLog("Prompt inputted"); // プロンプトの入力完了をログに記録
 }
 
-async function insertNewline(element) {
-  // Shift+Enterキーイベントを作成
-  const shiftEnterEvent = new KeyboardEvent('keydown', {
-    key: 'Enter',
-    code: 'Enter',
-    which: 13,
-    keyCode: 13,
-    bubbles: true,
-    cancelable: true,
-    shiftKey: true
-  });
-
-  element.dispatchEvent(shiftEnterEvent);
-
-  // テキストエリアに改行を追加
-  element.textContent += '\n';
-
-  // inputイベントをディスパッチ
-  const inputEvent = new InputEvent('input', {
-    inputType: 'insertLineBreak',
-    bubbles: true,
-    cancelable: true,
-  });
-  element.dispatchEvent(inputEvent);
-
-  // 改行の間に少し遅延を入れる
-  await new Promise(resolve => setTimeout(resolve, 50));
-}
-
+// Enterキーを押す非同期関数
 async function pressEnter(element) {
   const enterEvent = new KeyboardEvent('keydown', {
     bubbles: true,
@@ -145,12 +134,13 @@ async function pressEnter(element) {
     key: 'Enter',
     keyCode: 13
   });
-  element.dispatchEvent(enterEvent);
-  element.textContent += '\n';
-  element.dispatchEvent(new Event('input', { bubbles: true }));
+  element.dispatchEvent(enterEvent); // Enterキーのキーダウンイベントをディスパッチ
+  element.textContent += '\n'; // テキストエリアに改行を追加
+  element.dispatchEvent(new Event('input', { bubbles: true })); // 入力イベントをディスパッチ
   await new Promise(resolve => setTimeout(resolve, 50)); // 改行後の短い遅延
 }
 
+// クリップボードの内容を読み取る関数
 function readClipboard() {
   return new Promise((resolve, reject) => {
     // まず、navigator.clipboard.readText()を試みる
@@ -162,7 +152,7 @@ function readClipboard() {
       document.execCommand('paste');
       const text = textArea.value;
       document.body.removeChild(textArea);
-      resolve(text);
+      resolve(text); // クリップボードの内容を解決
     });
   });
 }
