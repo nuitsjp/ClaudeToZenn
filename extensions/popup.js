@@ -9,14 +9,10 @@ function debugLog(message) {
   }
 }
 
-debugLog("Popup script loaded"); // ポップアップスクリプトの読み込み完了をログに記録
-
 document.addEventListener('DOMContentLoaded', function() {
   debugLog("Popup DOM loaded"); // ポップアップのDOMが読み込まれたことをログに記録
   const generateButton = document.getElementById('generateSummary'); // 'generateSummary'というIDを持つボタンを取得
   const copyButton = document.getElementById('copyArtifacts'); // 'copyArtifacts'というIDを持つボタンを取得
-  const statusDiv = document.getElementById('status'); // 'status'というIDを持つ要素を取得
-  const summaryDiv = document.getElementById('summary'); // 'summary'というIDを持つ要素を取得
 
   // ボタンが見つからない場合、エラーメッセージをログに記録して処理を終了
   if (!generateButton || !copyButton) {
@@ -36,8 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function handleButtonClick(action, startMessage, successMessage) {
     debugLog(action + " button clicked"); // ボタンがクリックされたことをログに記録
-    statusDiv.textContent = startMessage; // ステータスに開始メッセージを表示
-    summaryDiv.textContent = ""; // サマリーをクリア
 
     // 現在のアクティブなタブを取得
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -51,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         debugLog("Response received in popup"); // ポップアップでレスポンスを受信したことをログに記録
         if (chrome.runtime.lastError) {
           debugLog("Chrome runtime error: " + chrome.runtime.lastError.message); // Chromeランタイムエラーをログに記録
-          statusDiv.textContent = "Error: " + chrome.runtime.lastError.message; // エラーメッセージをステータスに表示
         }
       });
     });
