@@ -16,15 +16,16 @@ public class PublishToZennService : IPublishToZennService
             var filePath = Path.Combine(request.RepositoryPath, "articles", fileName);
             File.WriteAllText(filePath, content);
 
-            var psi = new ProcessStartInfo
+            var process = new Process
             {
-                FileName = "pwsh.exe", // PowerShell Core実行ファイル
-                Arguments = $"-Command \"& {{.\\Publish-Article.ps1 -RepoPath '{request.RepositoryPath}' -ArticleTitle 'publish {fileName}' -FilePath '{filePath}'}}\"",
-                UseShellExecute = true,
-                CreateNoWindow = false
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "pwsh.exe", // PowerShell Core実行ファイル
+                    Arguments = $"-Command \"& {{.\\Publish-Article.ps1 -RepoPath '{request.RepositoryPath}' -ArticleTitle 'publish {fileName}' -FilePath '{filePath}'}}\"",
+                    UseShellExecute = true,
+                    CreateNoWindow = false
+                }
             };
-
-            var process = new Process { StartInfo = psi };
             process.Start();
 
             return new Result(true, null);
