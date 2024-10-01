@@ -28,10 +28,36 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 [Files]
 Source: "{#SourcePath}bin\Release\net481\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourcePath}bin\Release\net481\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#SourcePath}manifest.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}manifest.json"; DestDir: "{app}"; Flags: ignoreversion; AfterInstall: ModifyManifest
 
 [Registry]
 Root: HKCU; Subkey: "Software\Google\Chrome\NativeMessagingHosts\jp.nuits.claude_to_zenn"; ValueType: string; ValueName: ""; ValueData: "{app}\manifest.json"; Flags: uninsdeletevalue
+
+[Code]
+procedure ModifyManifest;
+var
+  Lines: TStringList;
+  Content, NewPath: String;
+  I: Integer;
+begin
+  Lines := TStringList.Create;
+  try
+    Lines.LoadFromFile(ExpandConstant('{app}\manifest.json'));
+    for I := 0 to Lines.Count - 1 do
+    begin
+      if Pos('"path":', Lines[I]) > 0 then
+      begin
+        NewPath := ExpandConstant('{app}\{#MyAppExeName}');
+        NewPath := StringReplace(NewPath, '\', '\\', [rfReplaceAll]);
+        Lines[I] := '  "path": "' + NewPath + '",';
+        Break;
+      end;
+    end;
+    Lines.SaveToFile(ExpandConstant('{app}\manifest.json'));
+  finally
+    Lines.Free;
+  end;
+end;
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
