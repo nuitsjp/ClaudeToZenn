@@ -3,7 +3,7 @@
   "allowed_origins": [
     "chrome-extension://[Your-Extension-ID]/"
   ],
-  "path": "C:\\Repos\\ClaudeToZenn\\host\\ClaudeToZenn\\bin\\Debug\\net481\\ClaudeToZenn.exe",
+  "path": "{app}\\ClaudeToZenn.exe",
   "name": "jp.nuits.claude_to_zenn",
   "type": "stdio"
 }
