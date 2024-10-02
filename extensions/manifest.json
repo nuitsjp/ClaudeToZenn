@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ClaudeToZenn",
-  "version": "1.0",
+  "version": "0.0.1",
   "description": "Generate Zenn articles from Claude.ai conversations",
   "permissions": [
     "nativeMessaging",
@@ -26,9 +26,11 @@
   ],
   "options_page": "options.html",
   "icons": {
-    "16": "images/icon16.svg",
-    "48": "images/icon48.svg",
-    "128": "images/icon128.svg"
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png",
+    "256": "icons/icon256.png"
   },
   "host_permissions": [
     "https://claude.ai/*"
