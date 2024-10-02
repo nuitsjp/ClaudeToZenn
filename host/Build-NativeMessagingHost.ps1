@@ -12,10 +12,15 @@ function New-Version {
             Major = [int]$Matches[1]
             Minor = [int]$Matches[2]
             Patch = [int]$Matches[3]
-            ToString = { "v$($this.Major).$($this.Minor).$($this.Patch)" }
         }
     }
     throw "Invalid version format: $VersionString"
+}
+
+# バージョンオブジェクトを文字列に変換する関数
+function ConvertTo-VersionString {
+    param([PSCustomObject]$Version)
+    return "v$($Version.Major).$($Version.Minor).$($Version.Patch)"
 }
 
 # 最新のGitタグからバージョンを取得し、インクリメントする関数
@@ -27,7 +32,7 @@ function Get-NextVersion {
     
     $latestVersion = $versionTags | ForEach-Object { New-Version $_ } | Sort-Object Major,Minor,Patch | Select-Object -Last 1
     $latestVersion.Patch++
-    return $latestVersion.ToString()
+    return ConvertTo-VersionString $latestVersion
 }
 
 # Inno Setup Compiler のパスを見つける関数
