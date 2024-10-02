@@ -1,7 +1,7 @@
 {
   "description": "ClaudeToZenn Native Messaging Host",
   "allowed_origins": [
-    "chrome-extension://[Your-Extension-ID]/"
+    "chrome-extension://fggohcicgpmlagnaglfdkggcmlgihnam/"
   ],
   "path": "{app}\\ClaudeToZenn.exe",
   "name": "jp.nuits.claude_to_zenn",

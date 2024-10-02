@@ -2,18 +2,18 @@ param (
     [Parameter(Mandatory = $true)]
     [string] $ExtensionId
 )
-$hostName = "jp.nuits.claude_to_zenn"
+$extensionName = "jp.nuits.claude_to_zenn"
 $modulePath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\ClaudeToZenn.exe"
 $manifestPath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\manifest.json"
 
 # マニフェストファイルの内容を動的に生成
 $manifestContent = @{
-    name = $hostName
+    name = $extensionName
     description = "ClaudeToZenn Native Messaging Host"
     path = $modulePath
     type = "stdio"
     allowed_origins = @(
-        "chrome-extension://$ExtensionId/"
+        "chrome-extension://*/"
     )
 } | ConvertTo-Json
 
@@ -21,10 +21,7 @@ $manifestContent = @{
 Set-Content -Path $manifestPath -Value $manifestContent
 
 # ユーザー固有のインストールの場合
-$registryPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
-
-# マシン全体のインストールの場合は以下を使用
-# $registryPath = "HKLM:\Software\Google\Chrome\NativeMessagingHosts\$hostName"
+$registryPath = "HKCU:\Software\Google\Chrome\NativeMessagingHosts\$extensionName"
 
 # レジストリキーが存在しない場合は作成
 if (!(Test-Path $registryPath)) {
