@@ -1,10 +1,12 @@
-#define MyAppName "ClaudeToZenn"
-; MyAppVersion は外部から定義されることを想定
+; 以下の値は外部から定義されることを想定
+;#define MyAppName "ClaudeToZenn"
 ;#define MyAppVersion "0.0.1"
+;#define MyOutputDir "ClaudeToZenn\bin\Release\Installer"
+;#define MyOutputBaseFilename "ClaudeToZenn-0.0.1-setup"
+
 #define MyAppPublisher "nuits.jp"
 #define MyAppURL "https://github.com/nuitsjp/ClaudeToZenn"
-#define MyAppExeName "ClaudeToZenn.exe"
-#define MyOutputDir "ClaudeToZenn\bin\Release\Installer"
+#define MyAppExeName MyAppName + ".exe"
 
 [Setup]
 AppId={{24254DEA-9933-461C-94A7-136CD235EA38}
@@ -17,7 +19,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={localappdata}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#MyOutputDir}
-OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
+OutputBaseFilename={#MyOutputBaseFilename}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -32,8 +34,8 @@ SetupMutex={{24254DEA-9933-461C-94A7-136CD235EA38}setup
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Files]
-Source: "{#SourcePath}ClaudeToZenn\bin\Release\net481\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourcePath}ClaudeToZenn\bin\Release\net481\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourcePath}{#MyAppName}\bin\Release\net481\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}{#MyAppName}\bin\Release\net481\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#SourcePath}manifest.json"; DestDir: "{app}"; Flags: ignoreversion; AfterInstall: ModifyManifest
 
 [Registry]

@@ -88,9 +88,23 @@ try {
         Write-Host "出力ディレクトリを作成しました: $outputDir"
     }
 
+    # アプリケーション名を定義
+    $MyAppName = "ClaudeToZenn"
+
+    # 出力ファイル名を設定
+    $outputBaseFilename = "{0}-{1}-setup" -f $MyAppName, $VersionWithoutV
+
     # Inno Setup Compiler を実行
     Write-Host "インストーラーのビルドを開始します..."
-    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/DMyAppVersion=$VersionWithoutV", "/O`"$outputDir`"" -NoNewWindow -PassThru -Wait
+    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList @(
+        "`"$scriptPath`"",
+        "/DMyAppName=`"$MyAppName`"",
+        "/DMyAppVersion=$VersionWithoutV",
+        "/DMyOutputDir=`"$outputDir`"",
+        "/DMyOutputBaseFilename=`"$outputBaseFilename`"",
+        "/O`"$outputDir`""
+    ) -NoNewWindow -PassThru -Wait
+    
     if ($process.ExitCode -ne 0) {
         throw "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
     }
