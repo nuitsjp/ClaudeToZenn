@@ -1,3 +1,8 @@
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$Version
+)
+
 # Inno Setup Compiler のパスを見つける関数
 function Find-InnoSetupCompiler {
     $possiblePaths = @(
@@ -19,9 +24,14 @@ function Find-InnoSetupCompiler {
 $ErrorActionPreference = "Stop"
 
 try {
+    # バージョン番号の検証
+    if (-not ($Version -match '^\d+\.\d+\.\d+$')) {
+        throw "無効なバージョン番号です。正しい形式は 'X.Y.Z' です。"
+    }
+
     # .NET Framework アプリケーションをビルドする
-    Write-Host "アプリケーションのビルドを開始します..."
-    dotnet build .\ClaudeToZenn.sln -c Release 
+    Write-Host "アプリケーションのビルドを開始します (バージョン: $Version)..."
+    dotnet build .\ClaudeToZenn.sln -c Release /p:ReleaseVersion=$Version
     Write-Host "アプリケーションのビルドが完了しました。"
 
     # Inno Setup Compiler のパスを取得
@@ -42,7 +52,7 @@ try {
 
     # Inno Setup Compiler を実行
     Write-Host "インストーラーのビルドを開始します..."
-    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/O`"$outputDir`"" -NoNewWindow -PassThru -Wait
+    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/O`"$outputDir`"", "/DMyAppVersion=$Version" -NoNewWindow -PassThru -Wait
     if ($process.ExitCode -ne 0) {
         throw "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
     }
