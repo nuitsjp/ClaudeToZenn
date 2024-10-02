@@ -1,5 +1,6 @@
 #define MyAppName "ClaudeToZenn"
-#define MyAppVersion "0.0.1"
+; MyAppVersion は外部から定義されることを想定
+;#define MyAppVersion "0.0.1"
 #define MyAppPublisher "nuits.jp"
 #define MyAppURL "https://github.com/nuitsjp/ClaudeToZenn"
 #define MyAppExeName "ClaudeToZenn.exe"

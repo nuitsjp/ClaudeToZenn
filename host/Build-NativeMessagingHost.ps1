@@ -90,7 +90,7 @@ try {
 
     # Inno Setup Compiler を実行
     Write-Host "インストーラーのビルドを開始します..."
-    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/O`"$outputDir`"", "/DMyAppVersion=$VersionWithoutV" -NoNewWindow -PassThru -Wait
+    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/DMyAppVersion=$VersionWithoutV", "/O`"$outputDir`"" -NoNewWindow -PassThru -Wait
     if ($process.ExitCode -ne 0) {
         throw "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
     }
