@@ -1,5 +1,5 @@
 #define MyAppName "ClaudeToZenn"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "0.0.1"
 #define MyAppPublisher "nuits.jp"
 #define MyAppURL "https://github.com/nuitsjp/ClaudeToZenn"
 #define MyAppExeName "ClaudeToZenn.exe"
@@ -16,7 +16,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={localappdata}\{#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir={#MyOutputDir}
-OutputBaseFilename=setup
+OutputBaseFilename={#MyAppName}-{#MyAppVersion}-setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

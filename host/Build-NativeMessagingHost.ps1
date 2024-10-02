@@ -42,6 +42,10 @@ try {
     if ($process.ExitCode -ne 0) {
         Write-Error "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
     }
+
+    $installerPath = Get-ChildItem -Path $outputDir | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $hash = Get-FileHash -Path $installerPath -Algorithm SHA256 | Select-Object Hash
+    Write-Host "Hash: $($hash.Hash)"
 } catch {
     Write-Error "エラーが発生しました: $_"
 }
