@@ -8,14 +8,20 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<ReleaseVersion>1.0.0</ReleaseVersion>
+		<AssemblyVersion>$(ReleaseVersion)</AssemblyVersion>
+		<FileVersion>$(ReleaseVersion)</FileVersion>
+	</PropertyGroup>
+
 	<ItemGroup>
-	  <PackageReference Include="System.Text.Json" Version="8.0.4" />
+		<PackageReference Include="System.Text.Json" Version="8.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Publish-Article.ps1">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<None Update="Publish-Article.ps1">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

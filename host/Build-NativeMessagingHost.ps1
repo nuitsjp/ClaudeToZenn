@@ -12,40 +12,49 @@ function Find-InnoSetupCompiler {
         }
     }
 
-    Write-Error "Inno Setup Compiler (ISCC.exe) が見つかりません。手動でパスを指定してください。"
-    exit 1
+    throw "Inno Setup Compiler (ISCC.exe) が見つかりません。手動でパスを指定してください。"
 }
 
 # エラーが発生した場合にスクリプトを停止する
 $ErrorActionPreference = "Stop"
 
-# .NET Framework アプリケーションをビルドする
-dotnet build .\ClaudeToZenn.sln -c Release 
-
-# Inno Setup Compiler のパスを取得
-$innoSetupCompiler = Find-InnoSetupCompiler
-
-# Inno Setup スクリプトのパス
-$scriptPath = ".\ClaudeToZenn.iss"
-
-# 出力ディレクトリ
-$outputDir = ".\ClaudeToZenn\bin\Release\Installer"
-
-# 出力ディレクトリが存在しない場合は作成
-if (-not (Test-Path -Path $outputDir)) {
-    New-Item -ItemType Directory -Force -Path $outputDir
-}
-
-# Inno Setup Compiler を実行
 try {
-    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/O`"$outputDir`"" -NoNewWindow -PassThru -Wait
-    if ($process.ExitCode -ne 0) {
-        Write-Error "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
+    # .NET Framework アプリケーションをビルドする
+    Write-Host "アプリケーションのビルドを開始します..."
+    dotnet build .\ClaudeToZenn.sln -c Release 
+    Write-Host "アプリケーションのビルドが完了しました。"
+
+    # Inno Setup Compiler のパスを取得
+    $innoSetupCompiler = Find-InnoSetupCompiler
+    Write-Host "Inno Setup Compiler が見つかりました: $innoSetupCompiler"
+
+    # Inno Setup スクリプトのパス
+    $scriptPath = ".\ClaudeToZenn.iss"
+
+    # 出力ディレクトリ
+    $outputDir = ".\ClaudeToZenn\bin\Release\Installer"
+
+    # 出力ディレクトリが存在しない場合は作成
+    if (-not (Test-Path -Path $outputDir)) {
+        New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+        Write-Host "出力ディレクトリを作成しました: $outputDir"
     }
 
-    $installerPath = Get-ChildItem -Path $outputDir | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    $hash = Get-FileHash -Path $installerPath -Algorithm SHA256 | Select-Object Hash
-    Write-Host "Hash: $($hash.Hash)"
+    # Inno Setup Compiler を実行
+    Write-Host "インストーラーのビルドを開始します..."
+    $process = Start-Process -FilePath $innoSetupCompiler -ArgumentList "`"$scriptPath`"", "/O`"$outputDir`"" -NoNewWindow -PassThru -Wait
+    if ($process.ExitCode -ne 0) {
+        throw "インストーラーのビルドに失敗しました。終了コード: $($process.ExitCode)"
+    }
+    Write-Host "インストーラーのビルドが完了しました。"
+
+    $installerPath = Get-ChildItem -Path $outputDir | Sort-Object LastWriteTime -Descending | Select-Object -First 1 -ExpandProperty FullName
+    $hash = Get-FileHash -Path $installerPath -Algorithm SHA256
+    Write-Host "インストーラーが作成されました: $installerPath"
+    Write-Host "SHA256 Hash: $($hash.Hash)"
 } catch {
     Write-Error "エラーが発生しました: $_"
+    exit 1
 }
+
+Write-Host "ビルドプロセスが正常に完了しました。"
