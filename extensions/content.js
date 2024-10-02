@@ -67,14 +67,19 @@ async function publishArticleButton() {
           console.log('Received message:', JSON.stringify(message)); // 受信したメッセージをログに記録
         });
 
-        // メッセージをポスト
-        port.postMessage(
-          { 
-            action: "post", 
-            content: text,
-            repositoryPath: "D:\\Zenn"
-          });
-        console.log('nativeMessaging posted.'); // メッセージのポストをログに記録
+        // ストレージから設定を取得
+        chrome.storage.sync.get('repositoryPath', function(data) {
+          const repositoryPath = data.repositoryPath || ''; // デフォルト値を空文字列に設定
+
+          // メッセージをポスト
+          port.postMessage(
+            { 
+              action: "post", 
+              content: text,
+              repositoryPath: repositoryPath // 設定から取得したリポジトリパスを使用
+            });
+          console.log('nativeMessaging posted. Repository path:', repositoryPath); // メッセージのポストとリポジトリパスをログに記録
+        });
 
       }).catch(err => {
         console.error('Failed to read clipboard contents: ', err); // クリップボード読み取り失敗をログに記録
@@ -108,22 +113,40 @@ function waitForElement(selector) {
 async function inputPrompt(inputArea) {
   debugLog("Inputting prompt"); // プロンプトの入力をログに記録
   
-  const url = chrome.runtime.getURL('prompt.txt'); // プロンプトテキストのURLを取得
-  const response = await fetch(url); // プロンプトテキストをフェッチ
-  const promptText = await response.text(); // プロンプトテキストをテキストとして取得
+  // ストレージから設定を取得
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get('multilineString', async function(data) {
+      try {
+        let promptText = data.multilineString || ''; // デフォルト値を空文字列に設定
+        
+        if (!promptText) {
+          debugLog("No custom prompt found, using default prompt"); // カスタムプロンプトが見つからない場合のログ
+          const url = chrome.runtime.getURL('prompt.txt'); // デフォルトプロンプトテキストのURLを取得
+          const response = await fetch(url); // デフォルトプロンプトテキストをフェッチ
+          promptText = await response.text(); // デフォルトプロンプトテキストをテキストとして取得
+        } else {
+          debugLog("Using custom prompt"); // カスタムプロンプトを使用する場合のログ
+        }
 
-  inputArea.textContent += promptText; // 入力エリアにプロンプトテキストを追加
-  const event = new InputEvent('input', {
-    inputType: 'insertText',
-    data: promptText,
-    bubbles: true,
-    cancelable: true,
+        inputArea.textContent += promptText; // 入力エリアにプロンプトテキストを追加
+        const event = new InputEvent('input', {
+          inputType: 'insertText',
+          data: promptText,
+          bubbles: true,
+          cancelable: true,
+        });
+        inputArea.dispatchEvent(event); // 入力イベントをディスパッチ
+        // 各行の入力後に遅延を入れる
+        await new Promise(resolve => setTimeout(resolve, 50)); // 50ミリ秒の遅延
+
+        debugLog("Prompt inputted"); // プロンプトの入力完了をログに記録
+        resolve();
+      } catch (error) {
+        debugLog("Error in inputPrompt: " + error.message); // エラーをログに記録
+        reject(error);
+      }
+    });
   });
-  inputArea.dispatchEvent(event); // 入力イベントをディスパッチ
-  // 各行の入力後に遅延を入れる
-  await new Promise(resolve => setTimeout(resolve, 50)); // 50ミリ秒の遅延
-
-  debugLog("Prompt inputted"); // プロンプトの入力完了をログに記録
 }
 
 // Enterキーを押す非同期関数
