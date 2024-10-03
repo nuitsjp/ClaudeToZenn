@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ClaudeToZenn",
-  "version": "0.0.3",
-  "description": "Generate Zenn articles from Claude.ai conversations",
+  "version": "0.0.4",
+  "description": "Claude.aiのチャット応対を要約し、Zennにブログとして公開するための拡張です。",
   "permissions": [
     "nativeMessaging",
     "storage",
