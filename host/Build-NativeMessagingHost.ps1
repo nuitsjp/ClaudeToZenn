@@ -52,10 +52,19 @@ function Find-InnoSetupCompiler {
     throw "Inno Setup Compiler (ISCC.exe) が見つかりません。手動でパスを指定してください。"
 }
 
+# PowerShellForGitHub モジュールをインストールおよびインポート
+if (-not (Get-Module -ListAvailable -Name PowerShellForGitHub)) {
+    Install-Module -Name PowerShellForGitHub -Force -Scope CurrentUser
+}
+Import-Module PowerShellForGitHub
+
 # エラーが発生した場合にスクリプトを停止する
 $ErrorActionPreference = "Stop"
 
 try {
+    # リポジトリーの最新化
+    git pull
+
     # バージョン番号の決定
     if (-not $Version) {
         $Version = Get-NextVersion
@@ -121,6 +130,40 @@ try {
     git push origin $newTag
     Write-Host "新しいGitタグ '$newTag' を作成し、リモートにプッシュしました。"
 
+    # GitHub リリースの作成とインストーラーのアップロード
+    $repoOwner = "nuitsjp"  # あなたの GitHub ユーザー名またはองかl名
+    $repoName = "ClaudeToZenn"  # リポジトリ名
+
+    # GitHub 認証情報を設定（環境変数から取得）
+    $secureString = ($env:CLAUDE_TO_ZENN_GH_TOKEN | ConvertTo-SecureString -AsPlainText -Force)
+    $cred = New-Object System.Management.Automation.PSCredential "username is ignored", $secureString
+    Set-GitHubAuthentication -Credential $cred
+
+    Write-Host "GitHub リリースの作成を開始します..."
+    $releaseParams = @{
+        OwnerName = $repoOwner
+        RepositoryName = $repoName
+        Tag = $newTag
+        Name = "Release $VersionWithoutV"
+        Body = "Release notes for version $VersionWithoutV"
+        Draft = $false
+        Prerelease = $false
+    }
+    $release = New-GitHubRelease @releaseParams
+
+    Write-Host "インストーラーのアップロードを開始します..."
+    $assetParams = @{
+        OwnerName = $repoOwner
+        RepositoryName = $repoName
+        ReleaseId = $release.ID
+        Path = $installerPath
+        ContentType = "application/octet-stream"
+    }
+    $asset = New-GitHubReleaseAsset @assetParams
+
+    Write-Host "GitHub リリースが作成され、インストーラーがアップロードされました。"
+    Write-Host "リリース URL: $($release.HtmlUrl)"
+    Write-Host "インストーラー URL: $($asset.BrowserDownloadUrl)"
 } catch {
     Write-Error "エラーが発生しました: $_"
     exit 1
