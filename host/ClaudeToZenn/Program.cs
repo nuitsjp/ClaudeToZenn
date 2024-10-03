@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using ClaudeToZenn;
 
-//System.Diagnostics.Debugger.Launch();
+#if DEBUG
+System.Diagnostics.Debugger.Launch();
+#endif
 
 var message = ReadMessage();
 if (string.IsNullOrEmpty(message))
