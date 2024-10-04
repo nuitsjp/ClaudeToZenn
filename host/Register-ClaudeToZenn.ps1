@@ -3,8 +3,8 @@ param (
     [string] $ExtensionId
 )
 $extensionName = "jp.nuits.claude_to_zenn"
-$modulePath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\ClaudeToZenn.exe"
-$manifestPath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net481\manifest.json"
+$modulePath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net48\ClaudeToZenn.exe"
+$manifestPath = Join-Path $PSScriptRoot "ClaudeToZenn\bin\Debug\net48\manifest.json"
 
 # マニフェストファイルの内容を動的に生成
 $manifestContent = @{

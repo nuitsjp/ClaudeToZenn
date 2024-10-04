@@ -5,14 +5,15 @@ using ClaudeToZenn;
 System.Diagnostics.Debugger.Launch();
 #endif
 
-var message = ReadMessage();
-if (string.IsNullOrEmpty(message))
-{
-    return ;
-}
 
 try
 {
+    var message = ReadMessage();
+    if (string.IsNullOrEmpty(message))
+    {
+        return;
+    }
+
     var request = Request.Parse(message);
     var service = new PublishToZennService();
     var result = service.Publish(request);
