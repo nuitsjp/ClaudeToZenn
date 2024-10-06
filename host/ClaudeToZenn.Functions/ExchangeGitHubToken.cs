@@ -10,15 +10,15 @@ public class ExchangeGitHubToken(
     ILoggerFactory loggerFactory)
 {
     private readonly ILogger _logger = loggerFactory.CreateLogger<ExchangeGitHubToken>();
-    private HttpClient _httpClient = httpClientFactory.CreateClient();
+    private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
     [Function("ExchangeGitHubToken")]
     public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-        var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
-        string code = query["code"];
+        var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query)!;
+        var code = query["code"];
 
         if (string.IsNullOrEmpty(code))
         {
@@ -29,6 +29,11 @@ public class ExchangeGitHubToken(
 
         var clientId = Environment.GetEnvironmentVariable("GitHubClientId");
         var clientSecret = Environment.GetEnvironmentVariable("GitHubClientSecret");
+        if (string.IsNullOrEmpty(clientId) || string.IsNullOrEmpty(clientSecret))
+        {
+            // ì‡ïîÉGÉâÅ[
+            return req.CreateResponse(HttpStatusCode.InternalServerError);
+        }
 
         var values = new Dictionary<string, string>
         {
