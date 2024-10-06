@@ -4,9 +4,11 @@
   "version": "0.0.4",
   "description": "Claude.aiのチャット応対を要約し、Zennにブログとして公開するための拡張です。",
   "permissions": [
+    "identity",
     "nativeMessaging",
     "storage",
-    "clipboardRead"
+    "clipboardRead",
+    "http://localhost:7071/*"
   ],
   "web_accessible_resources": [{
     "resources": ["prompt.txt"],
@@ -25,6 +27,18 @@
     }
   ],
   "options_page": "options.html",
+  "host_permissions": [
+    "http://localhost:7071/*",
+    "https://*.azurewebsites.net/*",
+    "https://github.com/*",
+    "https://api.github.com/*"
+  ],
+  "oauth2": {
+    "client_id": "Ov23liP5J0K2CK1mKWb7",
+    "scopes": [
+      "https://www.googleapis.com/auth/github"
+    ]
+  },
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

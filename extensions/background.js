@@ -63,4 +63,65 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
     return true;  // Will respond asynchronously
   }
+  if (request.action === "authenticate") {
+    authenticate().then(sendResponse);
+    return true;  // 非同期レスポンスを示す
+  }
 });
+
+async function getAccessToken(code) {
+  const functionUrl = "http://localhost:7071/api/ExchangeGitHubToken";
+  
+  const response = await fetch(`${functionUrl}?code=${code}`);
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const data = await response.text();
+  const params = new URLSearchParams(data);
+  const accessToken = params.get('access_token');
+
+  if (!accessToken) {
+    throw new Error('Failed to get access token');
+  }
+
+  return accessToken;
+}
+
+async function authenticate() {
+  const clientId = "Ov23liP5J0K2CK1mKWb7";
+  const redirectUrl = chrome.identity.getRedirectURL("github");
+  console.log("Redirect URL:", redirectUrl);
+
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUrl)}&scope=repo,user`;
+
+  try {
+    const responseUrl = await new Promise((resolve, reject) => {
+      chrome.identity.launchWebAuthFlow({
+        url: authUrl,
+        interactive: true
+      }, (responseUrl) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+        } else {
+          resolve(responseUrl);
+        }
+      });
+    });
+
+    console.log("Response URL:", responseUrl);
+    const url = new URL(responseUrl);
+    const code = url.searchParams.get("code");
+    
+    if (!code) {
+      throw new Error("No code received from GitHub");
+    }
+
+    const accessToken = await getAccessToken(code);
+    return accessToken;
+  } catch (error) {
+    console.error("Authentication error:", error);
+    throw error;
+  }
+}

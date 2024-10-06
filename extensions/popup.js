@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log("Popup DOM loaded");
   const generateButton = document.getElementById('generateSummary');
   const publishButton = document.getElementById('publishArticle');
+  const getReposButton = document.getElementById('getRepos');
 
-  if (!generateButton || !publishButton) {
+  if (!generateButton || !publishButton || !getReposButton) {
     console.log("One or more buttons not found");
     return;
   }
@@ -16,6 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
   publishButton.addEventListener('click', function() {
     checkRepositoryPathAndPublish();
+  });
+
+  getReposButton.addEventListener('click', async () => {
+    try {
+      const accessToken = await chrome.runtime.sendMessage({action: "authenticate"});
+      if (accessToken) {
+        await fetchRepositories(accessToken);
+      } else {
+        console.error("Failed to get access token");
+        // エラーメッセージをユーザーに表示
+      }
+    } catch (error) {
+      console.error("Authentication failed:", error);
+      // エラーメッセージをユーザーに表示
+    }
   });
 
   function handleButtonClick(action) {
@@ -52,5 +68,85 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+async function handleGitHubApiRequest(action) {
+  console.log(action + " button clicked");
+  try {
+    const response = await callGitHubAPI(action);
+    displayResult(response);
+  } catch (error) {
+    console.error('Error:', error);
+    if (error.message === 'Authentication required') {
+      initiateAuth();
+    } else {
+      alert('エラーが発生しました: ' + error.message);
+    }
+  }
+}
+
+async function callGitHubAPI(action) {
+  const token = await getStoredToken();
+  const response = await fetch(`http://localhost:7071/api/${action}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (response.status === 401) {
+    throw new Error('Authentication required');
+  }
+
+  return response.json();
+}
+
+function initiateAuth() {
+  chrome.windows.create({
+    url: 'http://localhost:7071/api/InitiateOAuth',
+    type: 'popup',
+    width: 800,
+    height: 600
+  });
+}
+
+function displayResult(result) {
+  // 結果を表示するロジックを実装
+  console.log(result);
+  // 例: リポジトリ一覧を表示
+  if (Array.isArray(result)) {
+    const repoList = result.map(repo => repo.name).join('\n');
+    alert('リポジトリ一覧:\n' + repoList);
+  }
+}
+
+async function getStoredToken() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get('githubToken', function(data) {
+      resolve(data.githubToken || '');
+    });
+  });
+}
+
+async function fetchRepositories(accessToken) {
+  try {
+    const response = await fetch('https://api.github.com/user/repos', {
+      headers: {
+        'Authorization': `token ${accessToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const repos = await response.json();
+    console.log("Repositories:", repos);
+    // レポジトリ情報の処理
+  } catch (error) {
+    console.error('Error fetching repositories:', error);
+    // エラーメッセージをユーザーに表示
+  }
+}
 
 console.log("Popup script finished loading");
