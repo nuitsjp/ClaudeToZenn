@@ -70,7 +70,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 async function getAccessToken(code) {
-  const functionUrl = "http://localhost:7071/api/ExchangeGitHubToken";
+  const functionUrl = "https://func-claude-to-zenn-dev-japaneast.azurewebsites.net/api/ExchangeGitHubToken";
   
   const response = await fetch(`${functionUrl}?code=${code}`);
 
