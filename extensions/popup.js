@@ -86,7 +86,7 @@ async function handleGitHubApiRequest(action) {
 
 async function callGitHubAPI(action) {
   const token = await getStoredToken();
-  const response = await fetch(`http://localhost:7071/api/${action}`, {
+  const response = await fetch(`https://func-zennit-prod-japaneast.azurewebsites.net/api/${action}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`
@@ -102,7 +102,7 @@ async function callGitHubAPI(action) {
 
 function initiateAuth() {
   chrome.windows.create({
-    url: 'http://localhost:7071/api/InitiateOAuth',
+    url: 'https://func-zennit-prod-japaneast.azurewebsites.net/api/InitiateOAuth',
     type: 'popup',
     width: 800,
     height: 600

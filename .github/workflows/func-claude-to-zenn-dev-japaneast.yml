@@ -1,10 +1,10 @@
-name: .NET Core アプリケーションを関数アプリ func-claude-to-zenn-dev-japaneast にビルドしてデプロイする
+name: .NET Core アプリケーションを関数アプリ func-zennit-prod-japaneast にビルドしてデプロイする
 on:
   push:
     branches:
     - main
 env:
-  AZURE_FUNCTIONAPP_NAME: func-claude-to-zenn-dev-japaneast
+  AZURE_FUNCTIONAPP_NAME: func-zennit-prod-japaneast
   AZURE_FUNCTIONAPP_PACKAGE_PATH: ClaudeToZenn.Functions/published
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 8.0.x
